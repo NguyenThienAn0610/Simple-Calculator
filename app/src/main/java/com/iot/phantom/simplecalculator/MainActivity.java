@@ -34,6 +34,8 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.Executors;
 
+import com.fathzer.soft.javaluator.*;
+
 public class MainActivity extends AppCompatActivity implements SerialInputOutputManager.Listener, View.OnClickListener {
     public class Constants {
         public static final int NUM_BUTTONS = 19;
@@ -43,8 +45,10 @@ public class MainActivity extends AppCompatActivity implements SerialInputOutput
     private View decorView;
     Button[] buttons = new Button[Constants.NUM_BUTTONS];
     TextView[] textViews = new TextView[Constants.NUM_TEXTVIEWS];
-    String buffer, result;
+    String bufferShow, buffer, result, ans;
     Boolean showResult = false;
+    DoubleEvaluator evaluator = new DoubleEvaluator();
+    StaticVariableSet<Double> variables = new StaticVariableSet<Double>();
 
     UsbSerialPort port;
     private static final String ACTION_USB_PERMISSION = "com.android.recipes.USB_PERMISSION";
@@ -108,6 +112,7 @@ public class MainActivity extends AppCompatActivity implements SerialInputOutput
 
         initUSBPort();
 
+        bufferShow = "";
         buffer = "";
 
         for (int i = 0; i < Constants.NUM_BUTTONS; i++) {
@@ -130,66 +135,91 @@ public class MainActivity extends AppCompatActivity implements SerialInputOutput
         }
         switch (view.getId()) {
             case R.id.button0:
+                bufferShow += "7";
                 buffer += "7";
                 break;
             case R.id.button1:
+                bufferShow += "8";
                 buffer += "8";
                 break;
             case R.id.button2:
+                bufferShow += "9";
                 buffer += "9";
                 break;
             case R.id.button3:
+                bufferShow = bufferShow.substring(0, bufferShow.length() - 1);
                 buffer = buffer.substring(0, buffer.length() - 1);
                 break;
             case R.id.button4:
+                bufferShow = "";
                 buffer = "";
                 break;
             case R.id.button5:
+                bufferShow += "4";
                 buffer += "4";
                 break;
             case R.id.button6:
+                bufferShow += "5";
                 buffer += "5";
                 break;
             case R.id.button7:
+                bufferShow += "6";
                 buffer += "6";
                 break;
             case R.id.button8:
-                buffer += "\u002b";
+                bufferShow += "\u002b";
+                buffer += "+";
                 break;
             case R.id.button9:
-                buffer += "\u2212";
+                bufferShow += "\u2212";
+                buffer += "-";
                 break;
             case R.id.button10:
+                bufferShow += "1";
                 buffer += "1";
                 break;
             case R.id.button11:
+                bufferShow += "2";
                 buffer += "2";
                 break;
             case R.id.button12:
+                bufferShow += "3";
                 buffer += "3";
                 break;
             case R.id.button13:
-                buffer += "\u00D7";
+                bufferShow += "\u00D7";
+                buffer += "*";
                 break;
             case R.id.button14:
-                buffer += "\u00F7";
+                bufferShow += "\u00F7";
+                buffer += "/";
                 break;
             case R.id.button15:
+                bufferShow += "0";
                 buffer += "0";
                 break;
             case R.id.button16:
+                bufferShow += ".";
                 buffer += ".";
                 break;
             case R.id.button17:
-                buffer += "Ans";
+                bufferShow += "Ans";
+                buffer += "ans";
                 break;
             case R.id.button18:
-                result = "Hello";
                 showResult = true;
+                Log.d("buffer", buffer);
+                try {
+                    result = Double.toString(evaluator.evaluate(buffer, variables));
+                    ans = result;
+                    variables.set("ans", Double.parseDouble(ans));
+                    textViews[1].setText(result);
+                } catch (Exception e) {
+                    textViews[1].setText("Syntax Error!");
+                }
                 break;
         }
-        textViews[0].setText(buffer);
-        textViews[1].setText(result);
+        textViews[0].setText(bufferShow);
     }
 
     @Override
